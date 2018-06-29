@@ -1,4 +1,4 @@
-function [phi_out_probe, phi_out_pump, x_mm, z_mm, t_fs] = xpm_1plus1d_fcn(xmax_mm, tmax_fs, sample_thickness_mm, num_z_steps, num_space_points, num_time_points, alpha_2_mm_per_W, ... 
+function [normalized_probe_energy_out, phi_out_probe, phi_out_pump, x_mm, z_mm, t_fs] = xpm_1plus1d_fcn(xmax_mm, tmax_fs, sample_thickness_mm, num_z_steps, num_space_points, num_time_points, alpha_2_mm_per_W, ... 
     alpha_2_d_mm_per_W, pump_waist, probe_waist, pump_pulsewidth_fs, probe_pulsewidth_fs, pump_peak_power_W, probe_peak_power_W)
 
 
@@ -28,6 +28,11 @@ phi_pump = sqrt(pump_peak_power_W).*exp(-((X - 0.5*xmax_mm).^2./pump_waist^2 + (
 phi_probe = sqrt(probe_peak_power_W).*exp(-((X - 0.5*xmax_mm).^2./probe_waist^2 + (T - 0.5*tmax_fs).^2./probe_pulsewidth_fs.^2));
 
 
+dX = 1e-3*xmax_mm/num_space_points;
+dT = 1e-15*tmax_fs/num_time_points;
+initial_probe_energy =  dX*dT*sum(sum(abs(phi_probe(:,:)).^2));
+
+
 % Linear propagation operator
 D_pump = -(0.5*(-1i*0.01*Kx.^2 + 1i*5000*OMEGA.^2)*0.5*dZ);
 D_probe = -(0.5*(-1i*0.01*Kx.^2 + 1i*5000*OMEGA.^2)*0.5*dZ);
@@ -55,6 +60,9 @@ for ind = 1:num_z_steps
     phi_out_pump(ind, :, :) = phi_pump;
     phi_out_probe(ind,:,:) = phi_probe;
 end
+
+final_probe_energy =  dX*dT*sum(sum(abs(phi_probe(:,:)).^2));
+normalized_probe_energy_out = (initial_probe_energy - final_probe_energy)/initial_probe_energy;
 
 end
 
