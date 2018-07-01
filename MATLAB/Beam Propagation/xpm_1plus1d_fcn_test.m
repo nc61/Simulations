@@ -1,36 +1,54 @@
+pump_waist_mm = 0.3;
+probe_waist_mm = 0.1;
+
+probe_pulsewidth_fs = 150;
+pump_pulsewidth_fs = 150;
+
+pump_peak_power_W = 1;
+probe_peak_power_W = 1;
 
 sample_thickness_mm = 5;
-num_z_steps = 20;
-num_space_points = 2^8;
-num_time_points = 2^8;
-alpha_2_mm_per_W = 200e-8;
+num_z_steps = 10;
+
+alpha_2_mm_per_W = 2000e-8;
 alpha_2_d_mm_per_W = 50e-8;
-pump_waist = 0.3;
-probe_waist = 0.1;
-pump_pulsewidth = 150;
-probe_pulsewidth = 150;
 
-xmax_mm = 10*max(pump_waist, probe_waist);
-tmax_fs = 10*max(pump_pulsewidth, probe_pulsewidth);
+% Number of fourier modes
+xmax_mm = 20*pump_waist_mm;
+tmax_fs = 20*pump_pulsewidth_fs;
 
-pump_peak_power = 1;
-probe_peak_power = 1;
+% Number of points to split up x into
+num_x_points = 2^7;
+num_time_points = 2^7;
 
-[E_norm, phi_out_probe, phi_out_pump, x, z, t] = xpm_1plus1d_fcn(xmax_mm, tmax_fs, sample_thickness_mm, num_z_steps, num_space_points, num_time_points, alpha_2_mm_per_W, alpha_2_d_mm_per_W, ... 
-                                                pump_waist, probe_waist, pump_pulsewidth, probe_pulsewidth, pump_peak_power, probe_peak_power);
+% points for x and y 
+x_mm = (xmax_mm/num_x_points)*(0:num_x_points-1);
+t_fs = (tmax_fs/num_time_points)*(0:num_time_points-1);
+[X, T] = meshgrid(x_mm, t_fs);
 
-                                            
-E_norm                                        
+
+phi_pump = sqrt(pump_peak_power_W).*exp(-((X - 0.5*xmax_mm).^2./pump_waist_mm^2 + (T - 0.5*tmax_fs).^2./pump_pulsewidth_fs.^2));
+phi_probe = sqrt(probe_peak_power_W).*exp(-((X - 0.5*xmax_mm).^2./probe_waist_mm^2 + (T - 0.5*tmax_fs).^2./probe_pulsewidth_fs.^2));
+
+[normalized_probe_energy_out, phi_out_probe, phi_out_pump, z_mm] = xpm_1plus1d_fcn(x_mm, t_fs, phi_pump, phi_probe, sample_thickness_mm, num_z_steps, alpha_2_mm_per_W, ... 
+    alpha_2_d_mm_per_W, 0);
+
+normalized_probe_energy_out = xpm_1plus1d_fcn(x_mm, t_fs, phi_pump, phi_probe, sample_thickness_mm, num_z_steps, alpha_2_mm_per_W, ... 
+    alpha_2_d_mm_per_W, 1);
+
+
+normalized_probe_energy_out
+
 figure(1)
 % surf(x,z,abs(phi_out(:,:,N_time/2)).^2)
-surf(x,z,abs(squeeze(phi_out_pump(:,:,num_time_points/2+1))).^2)
+surf(x_mm,z_mm,abs(squeeze(phi_out_pump(:,:,num_time_points/2+1))).^2)
 hold on
-surf(x,z,abs(squeeze(phi_out_probe(:,:,num_time_points/2+1))).^2)
+surf(x_mm,z_mm,abs(squeeze(phi_out_probe(:,:,num_time_points/2+1))).^2)
 hold off
 shading interp, colormap('jet')
 
 figure(2)
-surf(t,z,abs(squeeze(phi_out_pump(:,num_space_points/2+1,:))).^2)
+surf(t_fs,z_mm,abs(squeeze(phi_out_pump(:,num_x_points/2+1,:))).^2)
 shading interp
 colormap('jet')
 colorbar
