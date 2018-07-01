@@ -8,10 +8,10 @@ pump_peak_power_W = 1;
 probe_peak_power_W = 1;
 
 sample_thickness_mm = 5;
-num_z_steps = 10;
+num_z_steps = 30;
 
-alpha_2_mm_per_W = 2000e-8;
-alpha_2_d_mm_per_W = 50e-8;
+alpha_2_mm_per_W = 0e-8;
+alpha_2_d_mm_per_W = 0e-8;
 
 % Number of fourier modes
 xmax_mm = 20*pump_waist_mm;
@@ -32,7 +32,7 @@ phi_probe = sqrt(probe_peak_power_W).*exp(-((X - 0.5*xmax_mm).^2./probe_waist_mm
 
 tic
 [normalized_probe_energy_out, phi_out_probe, phi_out_pump, z_mm] = xpm_1plus1d_fcn(x_mm, t_fs, phi_pump, phi_probe, sample_thickness_mm, num_z_steps, alpha_2_mm_per_W, ... 
-    alpha_2_d_mm_per_W, 3, 3, 1.5, 1.2, 4, 4.05, 5000, 5000, 0);
+    alpha_2_d_mm_per_W, 3, 3, 1.5, 1.2, 4, 4, 0, 0, 0);
 toc
 
 tic
