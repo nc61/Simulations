@@ -1,5 +1,5 @@
-function [normalized_probe_energy_out, varargout] = xpm_1plus2d_fcn(x_mm, y_mm, t_fs, phi_pump, ... 
-    phi_probe, sample_thickness_mm, num_z_steps, alpha_2_mm_per_W, alpha_2_d_mm_per_W, ... 
+function [normalized_probe_energy_out, varargout] = xpm_1plus2d_fcn(x_mm, y_mm, t_fs, phi_pump_sqrt_GW_per_sqrt_cm2, ... 
+    phi_probe_sqrt_GW_per_sqrt_cm2, sample_thickness_mm, num_z_steps, alpha_2_nd_cm_per_GW, alpha_2_d_cm_per_GW, ... 
     pump_refractive_index, probe_refractive_index, pump_wavelength_um, probe_wavelength_um, ... 
     pump_group_index, probe_group_index, ...
     pump_dispersion_fs2_per_mm, probe_dispersion_fs2_per_mm, output_normalized_energy_only)
@@ -15,24 +15,29 @@ num_x_points = length(x_mm);
 num_y_points = length(y_mm);
 
 % Fourier space for x and y
-kx = 2*pi/xmax_mm*[(0:num_x_points/2-1) (-num_x_points/2:-1)];
-ky = 2*pi/ymax_mm*[(0:num_y_points/2-1) (-num_y_points/2:-1)];
-omega = 2*pi/tmax_fs*[(0:num_time_points/2-1) (-num_time_points/2:-1)];
+kx_invmm = 2*pi/xmax_mm*[(0:num_x_points/2-1) (-num_x_points/2:-1)];
+ky_invmm = 2*pi/ymax_mm*[(0:num_y_points/2-1) (-num_y_points/2:-1)];
+omega_rad_per_fs = 2*pi/tmax_fs*[(0:num_time_points/2-1) (-num_time_points/2:-1)];
 
-[Kx, Ky, OMEGA] = ndgrid(kx,ky,omega);
+[Kx_invmm, Ky_invmm, OMEGA_rad_per_fs] = ndgrid(kx_invmm,ky_invmm,omega_rad_per_fs);
 
 % nonlinear
-Aeff_mm_squared = 20e-6;
+alpha_2_nd_mm_per_GW = 10*alpha_2_nd_cm_per_GW;
+alpha_2_d_mm_per_GW = 10*alpha_2_d_cm_per_GW;
 
-gamma2 = alpha_2_mm_per_W;
-gamma2_d = alpha_2_d_mm_per_W;
+phi_probe_sqrt_GW_per_sqrt_mm2 = (1e-1)*phi_probe_sqrt_GW_per_sqrt_cm2;
+phi_pump_sqrt_GW_per_sqrt_mm2 = (1e-1)*phi_pump_sqrt_GW_per_sqrt_cm2;
 
 % Propagation distance
 dz_mm = sample_thickness_mm/num_z_steps;
-dx_m = 1e-3*xmax_mm/num_x_points;
-dy_m = 1e-3*xmax_mm/num_x_points;
+dx_mm = xmax_mm/num_x_points;
+dy_mm = xmax_mm/num_x_points;
 dt_s = 1e-15*tmax_fs/num_time_points;
-initial_probe_energy_W =  dx_m*dy_m*dt_s*sum(sum(sum(abs(phi_probe(:,:)).^2)));
+
+probe_x_integrated = squeeze(trapz(x_mm, 1e9*abs(phi_probe_sqrt_GW_per_sqrt_mm2).^2, 1));
+probe_power = squeeze(trapz(y_mm, probe_x_integrated, 1));
+initial_probe_energy_J = squeeze(trapz(1e-15*t_fs, probe_power))
+
 
 % Calculation of propagation constants
 k_pump_per_mm = 1e3*pump_refractive_index*2*pi/pump_wavelength_um;
@@ -45,8 +50,8 @@ probe_group_velocity_mm_per_fs = 1e-12*c/probe_group_index;
 group_velocity_dispersion_fs_per_mm = 1/pump_group_velocity_mm_per_fs - 1/probe_group_velocity_mm_per_fs;
 
 % Linear propagation operator
-D_pump = -(0.5*(-1i*1/(2*k_pump_per_mm)*(Kx.^2 + Ky.^2) + 1i*pump_dispersion_fs2_per_mm*OMEGA.^2 - 1i*(group_velocity_dispersion_fs_per_mm)*OMEGA)*0.5*dz_mm);
-D_probe = -(0.5*(-1i*1/(2*k_probe_per_mm)*(Kx.^2 + Ky.^2) + 1i*probe_dispersion_fs2_per_mm*OMEGA.^2)*0.5*dz_mm);
+D_pump = -(0.5*(-1i*1/(2*k_pump_per_mm)*(Kx_invmm.^2 + Ky_invmm.^2) + 1i*pump_dispersion_fs2_per_mm*OMEGA_rad_per_fs.^2 - 1i*(group_velocity_dispersion_fs_per_mm)*OMEGA_rad_per_fs)*0.5*dz_mm);
+D_probe = -(0.5*(-1i*1/(2*k_probe_per_mm)*(Kx_invmm.^2 + Ky_invmm.^2) + 1i*probe_dispersion_fs2_per_mm*OMEGA_rad_per_fs.^2)*0.5*dz_mm);
 
 
 if (~output_normalized_energy_only)
@@ -60,25 +65,28 @@ z_mm = dz_mm:dz_mm:sample_thickness_mm;
 for ind = 1:num_z_steps
     
     %Pump
-    lin_step_pump_1 = ifftn(fftn(phi_pump).*exp(D_pump));
-    nonlin_step_pump = lin_step_pump_1.*exp((-2*gamma2_d*abs(lin_step_pump_1).^2)*dz_mm);
+    lin_step_pump_1 = ifftn(fftn(phi_pump_sqrt_GW_per_sqrt_mm2).*exp(D_pump));
+    nonlin_step_pump = lin_step_pump_1.*exp((-2*alpha_2_d_mm_per_GW*abs(lin_step_pump_1).^2)*dz_mm);
     lin_step_pump_2 = ifftn(fftn(nonlin_step_pump).*exp(D_pump));
-    phi_pump = lin_step_pump_2;
+    phi_pump_sqrt_GW_per_sqrt_mm2 = lin_step_pump_2;
     
     % Probe
-    lin_step_probe_1 = ifftn(fftn(phi_probe).*exp(D_probe));
-    nonlin_step_probe = lin_step_probe_1.*exp((-2*gamma2*abs(lin_step_pump_1).^2)*dz_mm);
+    lin_step_probe_1 = ifftn(fftn(phi_probe_sqrt_GW_per_sqrt_mm2).*exp(D_probe));
+    nonlin_step_probe = lin_step_probe_1.*exp((-2*alpha_2_nd_mm_per_GW*abs(lin_step_pump_1).^2)*dz_mm);
     lin_step_probe_2 = ifftn(fftn(nonlin_step_probe).*exp(D_probe));
-    phi_probe = lin_step_probe_2;
+    phi_probe_sqrt_GW_per_sqrt_mm2 = lin_step_probe_2;
     
     if (~output_normalized_energy_only)
-        phi_out_pump(ind, :, :, :) = phi_pump;
-        phi_out_probe(ind,:,:, :) = phi_probe;
+        phi_out_pump(ind, :, :, :) = phi_pump_sqrt_GW_per_sqrt_mm2;
+        phi_out_probe(ind,:,:, :) = phi_probe_sqrt_GW_per_sqrt_mm2;
     end
 end
 
-final_probe_energy_W =  dx_m*dy_m*dt_s*sum(sum(sum(abs(phi_probe(:,:,:)).^2)));
-normalized_probe_energy_out = (initial_probe_energy_W - final_probe_energy_W)/initial_probe_energy_W;
+probe_x_integrated = squeeze(trapz(x_mm, 1e9*abs(phi_probe_sqrt_GW_per_sqrt_mm2).^2, 1));
+probe_power = squeeze(trapz(y_mm, probe_x_integrated, 1));
+final_probe_energy_J = squeeze(trapz(1e-15*t_fs, probe_power));
+
+normalized_probe_energy_out = (initial_probe_energy_J - final_probe_energy_J)/initial_probe_energy_J;
 
 if ~output_normalized_energy_only
     varargout{1} = phi_out_probe;
