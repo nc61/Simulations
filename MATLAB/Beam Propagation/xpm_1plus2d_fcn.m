@@ -38,6 +38,10 @@ probe_x_integrated = squeeze(trapz(x_mm, 1e9*abs(phi_probe_sqrt_GW_per_sqrt_mm2)
 probe_power = squeeze(trapz(y_mm, probe_x_integrated, 1));
 initial_probe_energy_J = squeeze(trapz(1e-15*t_fs, probe_power))
 
+pump_x_integrated = squeeze(trapz(x_mm, 1e9*abs(phi_pump_sqrt_GW_per_sqrt_mm2).^2, 1));
+pump_power = squeeze(trapz(y_mm, pump_x_integrated, 1));
+initial_pump_energy_J = squeeze(trapz(1e-15*t_fs, pump_power))
+
 
 % Calculation of propagation constants
 k_pump_per_mm = 1e3*pump_refractive_index*2*pi/pump_wavelength_um;

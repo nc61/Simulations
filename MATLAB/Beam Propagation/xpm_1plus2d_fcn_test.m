@@ -1,17 +1,17 @@
-pump_waist_mm = 0.3;
-probe_waist_mm = 0.1;
+pump_waist_mm = 1.25;
+probe_waist_mm = 0.3;
 
 probe_pulsewidth_fs = 222;
-pump_pulsewidth_fs = 100;
+pump_pulsewidth_fs = 222;
 
-pump_peak_intensity_GW_per_cm2 = 0.4494;
+pump_peak_intensity_GW_per_cm2 = 0.5;
 probe_peak_intensity_GW_per_cm2 = 0.01;
 
-sample_thickness_mm = 1;
+sample_thickness_mm = 0.5;
 num_z_steps = 20;
 
-alpha_2_nd_cm_per_GW = 20;
-alpha_2_d_cm_per_GW = 5;
+alpha_2_nd_cm_per_GW = 25;
+alpha_2_d_cm_per_GW = 2;
 
 % Number of fourier modes
 xmax_mm = 20*pump_waist_mm;
@@ -29,14 +29,23 @@ y_mm = (ymax_mm/num_y_points)*(0:num_y_points-1);
 t_fs = (tmax_fs/num_time_points)*(0:num_time_points-1);
 [X_mm, Y_mm, T_fs] = meshgrid(x_mm, y_mm, t_fs);
 
+pump_wavelength_um = 7.75;
+pump_refractive_index = 3.4190;
+pump_group_index = 3.4239;
+pump_group_velocity_dispersion_fs2_per_mm = 201.34;
+
+probe_wavelength_um = 1.25;
+probe_refractive_index = 3.5110;
+probe_group_index = 3.7610;
+probe_group_velocity_dispersion_fs2_per_mm = 201.34;
+
 
 phi_pump = sqrt(pump_peak_intensity_GW_per_cm2).*exp(-((X_mm - 0.5*xmax_mm).^2./(2*pump_waist_mm^2) + (Y_mm - 0.5*ymax_mm).^2./(2*pump_waist_mm^2) + (T_fs - 0.5*tmax_fs).^2./(2*pump_pulsewidth_fs.^2)));
 phi_probe = sqrt(probe_peak_intensity_GW_per_cm2).*exp(-(((X_mm - 0.5*xmax_mm).^2 + (Y_mm - 0.5*ymax_mm).^2)./(2*probe_waist_mm^2) + (T_fs - 0.5*tmax_fs).^2./(2*probe_pulsewidth_fs.^2)));
 
-tic
 [normalized_probe_energy_out, phi_out_probe, phi_out_pump, z_mm] = xpm_1plus2d_fcn(x_mm, y_mm, t_fs, phi_pump, phi_probe, sample_thickness_mm, num_z_steps, alpha_2_nd_cm_per_GW, ... 
-    alpha_2_d_cm_per_GW, 3.5110, 3.4190, 1.25, 7.75, 3.6985, 3.4239, 301, 201, 0);
-toc
+    alpha_2_d_cm_per_GW, pump_refractive_index, probe_refractive_index, pump_wavelength_um, probe_wavelength_um, pump_group_index, ... 
+    probe_group_index, pump_group_velocity_dispersion_fs2_per_mm, probe_group_velocity_dispersion_fs2_per_mm, 0);
 
 % tic
 % normalized_probe_energy_out = xpm_1plus2d_fcn(x_mm, y_mm, t_fs, phi_pump, phi_probe, sample_thickness_mm, num_z_steps, alpha_2_nd_cm_per_GW, ... 
