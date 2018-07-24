@@ -1,6 +1,6 @@
 rep_rate_Hz = 1000;
-energy_J = 20e-6;
-pulsewidth_fs_HW_inve_max = 222;
+energy_J = 15.5e-6;
+pulsewidth_fs_HW_inve_max = 100;
 waist_mm_HW_inve_max = 1.2;
 
 peak_intensity_GW_per_cm2 = (1e-9)*energy_J/(pi^(3/2)*(1e-1*waist_mm_HW_inve_max)^2*(1e-15)*pulsewidth_fs_HW_inve_max)

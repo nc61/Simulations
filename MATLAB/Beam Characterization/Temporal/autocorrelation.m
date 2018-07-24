@@ -1,6 +1,6 @@
 c = 3e8;
 
-scan_data = tdfread('with 1440nm filter 2');
+scan_data = tdfread('scan2');
 stage_position = scan_data.Position;
 signal = scan_data.x1;
 

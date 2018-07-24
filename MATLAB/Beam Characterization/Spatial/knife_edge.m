@@ -1,4 +1,4 @@
-scan_data = tdfread('knife_edge_backward');
+scan_data = tdfread('H:\Home\NLO\Shared\Group Members\Nick\Measurements 071918\scan7');
 stage_position = scan_data.Position;
 absorp = scan_data.x1;
 
@@ -8,13 +8,11 @@ else
     fitfun = @(p, xdata)p(1) + p(2)/2*(1 + erf((xdata - p(3))/p(4)));
 end
 
-maximum = 20;
+maximum = 5;
 midpoint_absorption_value = (absorp(1) + absorp(end))/2;
 [~, stage_midpoint_index] = min(abs(absorp - midpoint_absorption_value));
 center = stage_position(stage_midpoint_index);
-center = 5;
 waist_HW_1_over_e_max = (stage_position(end) - stage_position(1))/5;
-waist = 0.5
 offset = 0;
 
 
