@@ -1,15 +1,17 @@
-pump_waist_mm = 1.23;
-probe_waist_mm = 0.09;
+pump_waist_mm = 1.24*sqrt(2);
+probe_waist_mm = 0.0857*sqrt(2);
 
-probe_pulsewidth_fs = 123;
-pump_pulsewidth_fs = 100;
+probe_pulsewidth_fs = 77;
+pump_pulsewidth_fs = 70;
 
 pump_energy_J = 7.05e-6;
+pump_peak_intensity_GW_per_cm2 = 2*gaussianbeam_peak_intensity_fcn(pump_energy_J, pump_waist_mm, pump_pulsewidth_fs);
+probe_peak_intensity_GW_per_cm2 = 0.01;
 
-sample_thickness_mm = 0.40;
-num_z_steps = 3
+sample_thickness_mm = 1;
+num_z_steps = 7;
 
-alpha_2_nd_cm_per_GW = 2.4;
+alpha_2_nd_cm_per_GW = 30;
 alpha_2_d_cm_per_GW = 0;
 
 % Number of fourier modes
@@ -38,13 +40,9 @@ probe_refractive_index = 3.513;
 probe_group_index = 3.7005;
 probe_group_velocity_dispersion_fs2_per_mm = 2*389.25;
 
-reflectivity_pump = ((pump_refractive_index -1)/(pump_refractive_index + 1))^2;
-pump_peak_intensity_GW_per_cm2 = (1 - reflectivity_pump)*gaussianbeam_peak_intensity_fcn(pump_energy_J, pump_waist_mm, pump_pulsewidth_fs);
-probe_peak_intensity_GW_per_cm2 = 0.01;
 
-
-phi_pump = sqrt(pump_peak_intensity_GW_per_cm2).*exp(-(((X_mm - 0.5*xmax_mm).^2+ (Y_mm - 0.5*ymax_mm).^2)./(2*pump_waist_mm^2) + (T_fs - 0.45*tmax_fs).^2./(2*pump_pulsewidth_fs.^2)));
-phi_probe = sqrt(probe_peak_intensity_GW_per_cm2).*exp(-(((X_mm - 0.5*xmax_mm).^2 + (Y_mm - 0.5*ymax_mm).^2)./(2*probe_waist_mm^2) + (T_fs - 0.5*tmax_fs).^2./(2*probe_pulsewidth_fs.^2)));
+phi_pump = sqrt(pump_peak_intensity_GW_per_cm2).*exp(-((X_mm - 0.5*xmax_mm).^2./(2*pump_waist_mm^2) + (Y_mm - 0.5*ymax_mm).^2./(2*pump_waist_mm^2) + (T_fs - 0.4*tmax_fs).^2./(pump_pulsewidth_fs.^2)));
+phi_probe = sqrt(probe_peak_intensity_GW_per_cm2).*exp(-(((X_mm - 0.5*xmax_mm).^2 + (Y_mm - 0.5*ymax_mm).^2)./(2*probe_waist_mm^2) + (T_fs - 0.5*tmax_fs).^2./(probe_pulsewidth_fs.^2)));
 
  [normalized_probe_energy_out, phi_out_probe, phi_out_pump, z_mm] = xpm_1plus2d_fcn(x_mm, y_mm, t_fs, phi_pump, phi_probe, sample_thickness_mm, num_z_steps, alpha_2_nd_cm_per_GW, ... 
      alpha_2_d_cm_per_GW, pump_refractive_index, probe_refractive_index, pump_wavelength_um, probe_wavelength_um, pump_group_index, ... 

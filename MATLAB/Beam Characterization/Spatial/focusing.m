@@ -1,7 +1,7 @@
-positions = [0 5 10 15 20 25];
+positions = [0 5 10 15 20];
 waists = zeros(size(positions));
 
-filenames = {'e_0', 'e_5', 'e_10', 'e_15', 'e_20', 'e_25'};
+filenames = file_selector('multiSelect', 'on');
 
 for ind = 1:length(filenames)
 
@@ -19,9 +19,7 @@ maximum = 8;
 midpoint_absorption_value = (absorp(1) + absorp(end))/2;
 [~, stage_midpoint_index] = min(abs(absorp - midpoint_absorption_value));
 center = stage_position(stage_midpoint_index);
-center = 4.5
 waist = (stage_position(end) - stage_position(1))/5;
-waist = 0.6
 offset = 0;
 
 

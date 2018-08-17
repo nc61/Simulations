@@ -40,7 +40,7 @@ initial_probe_energy_J = squeeze(trapz(1e-15*t_fs, probe_power));
 
 pump_x_integrated = squeeze(trapz(x_mm, 1e9*abs(phi_pump_sqrt_GW_per_sqrt_mm2).^2, 1));
 pump_power = squeeze(trapz(y_mm, pump_x_integrated, 1));
-initial_pump_energy_J = squeeze(trapz(1e-15*t_fs, pump_power))
+initial_pump_energy_J = squeeze(trapz(1e-15*t_fs, pump_power));
 
 
 % Calculation of propagation constants
@@ -51,12 +51,12 @@ k_probe_invmm = 1e3*probe_refractive_index*2*pi/probe_wavelength_um;
 pump_group_velocity_mm_per_fs = 1e-12*c/pump_group_index;
 probe_group_velocity_mm_per_fs = 1e-12*c/probe_group_index;
 
-group_velocity_dispersion_fs_per_mm = 1/pump_group_velocity_mm_per_fs - 1/probe_group_velocity_mm_per_fs;
+group_velocity_mismatch_fs_per_mm = 1/pump_group_velocity_mm_per_fs - 1/probe_group_velocity_mm_per_fs;
 
 % Linear propagation operator
-D_pump = -(0.5*(-1i*1/(2*k_pump_invmm)*(Kx_invmm.^2 + Ky_invmm.^2) + 1i*pump_dispersion_fs2_per_mm*OMEGA_rad_per_fs.^2 - 1i*(group_velocity_dispersion_fs_per_mm)*OMEGA_rad_per_fs)*0.5*dz_mm);
+D_pump = -(0.5*(-1i*1/(2*k_pump_invmm)*(Kx_invmm.^2 + Ky_invmm.^2) + 1i*pump_dispersion_fs2_per_mm*OMEGA_rad_per_fs.^2 - 1i*(group_velocity_mismatch_fs_per_mm)*OMEGA_rad_per_fs)*dz_mm);
 
-D_probe = -(0.5*(-1i*1/(2*k_probe_invmm)*(Kx_invmm.^2 + Ky_invmm.^2) + 1i*probe_dispersion_fs2_per_mm*OMEGA_rad_per_fs.^2)*0.5*dz_mm);
+D_probe = -(0.5*(-1i*1/(2*k_probe_invmm)*(Kx_invmm.^2 + Ky_invmm.^2) + 1i*probe_dispersion_fs2_per_mm*OMEGA_rad_per_fs.^2)*dz_mm);
 
 
 if (~output_normalized_energy_only)
@@ -71,7 +71,7 @@ for ind = 1:num_z_steps
     
     %Pump
     lin_step_pump_1 = ifftn(fftn(phi_pump_sqrt_GW_per_sqrt_mm2).*exp(D_pump));
-    nonlin_step_pump = lin_step_pump_1.*exp((-2*alpha_2_d_mm_per_GW*abs(lin_step_pump_1).^2)*dz_mm);
+    nonlin_step_pump = lin_step_pump_1.*exp((-alpha_2_d_mm_per_GW*abs(lin_step_pump_1).^2)*dz_mm);
     lin_step_pump_2 = ifftn(fftn(nonlin_step_pump).*exp(D_pump));
     phi_pump_sqrt_GW_per_sqrt_mm2 = lin_step_pump_2;
             

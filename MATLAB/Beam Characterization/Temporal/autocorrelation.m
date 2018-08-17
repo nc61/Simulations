@@ -1,10 +1,10 @@
 c = 3e8;
 
-scan_data = tdfread('scan2');
-stage_position = scan_data.Position;
-signal = scan_data.x1;
+filename = file_selector();
 
-fitfun = @(p, xdata)p(1) + p(2)*exp(-2.77*(xdata - p(3)).^2./p(4)^2);
+[stage_position, signal] = get_scan_data(filename);
+
+fitfun = @(p, xdata)p(1) + p(2)*exp(-(xdata - p(3)).^2./p(4)^2);
 
 [maximum, center_index] = max(signal);
 offset = mean(signal(1:5));

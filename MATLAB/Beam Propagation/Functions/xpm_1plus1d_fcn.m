@@ -41,8 +41,8 @@ probe_group_velocity_mm_per_fs = 1e-12*c/probe_group_index;
 group_velocity_dispersion_fs_per_mm = 1/pump_group_velocity_mm_per_fs - 1/probe_group_velocity_mm_per_fs;
 
 % Linear propagation operator
-D_pump = -(0.5*(-1i*1/(2*k_pump_per_mm)*Kx.^2 + 1i*pump_dispersion_fs2_per_mm*OMEGA.^2 - 1i*(group_velocity_dispersion_fs_per_mm)*OMEGA)*0.5*dz_mm);
-D_probe = -(0.5*(-1i*1/(2*k_probe_per_mm)*Kx.^2 + 1i*probe_dispersion_fs2_per_mm*OMEGA.^2)*0.5*dz_mm);
+D_pump = -((-1i*1/(2*k_pump_per_mm)*Kx.^2 + 1i*pump_dispersion_fs2_per_mm*OMEGA.^2 - 1i*(group_velocity_dispersion_fs_per_mm)*OMEGA)*0.5*dz_mm);
+D_probe = -((-1i*1/(2*k_probe_per_mm)*Kx.^2 + 1i*probe_dispersion_fs2_per_mm*OMEGA.^2)*0.5*dz_mm);
 
 
 if (~output_normalized_energy_only)
