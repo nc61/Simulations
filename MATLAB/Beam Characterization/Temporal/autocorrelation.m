@@ -27,7 +27,7 @@ xfit_delay_shifted = 2*xfit_shifted/10*2.54/100/c*1e15;
 data_pos_shifted = stage_position - xfit(fit_center_index);
 delay = 2*data_pos_shifted/10*2.54/100/c*1e15;
 plot(delay, signal, 'bo')
-xlabel('delay (fs)'), ylabel('signal (a.u.)'), title(sprintf('Autocorrelation signal, t_p = %f', pulsewidth))
+xlabel('delay (fs)'), ylabel('signal (a.u.)'), title(sprintf('Gaussian autocorrelation signal, t_p = %.0f fs', pulsewidth))
 
 hold on
 plot(xfit_delay_shifted, fitfun(fit_parameters,xfit), 'r');

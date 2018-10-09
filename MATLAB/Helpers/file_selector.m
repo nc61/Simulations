@@ -2,12 +2,12 @@ function full_filepath = file_selector(varargin)
 
 p = inputParser;
 
-addParameter(p, 'fileName', '');
-addParameter(p, 'selectDirectory', 0);
-addParameter(p, 'multiSelect', 'off');
+p.addParameter('filename', '');
+p.addParameter('selectDirectory', 0);
+p.addParameter('multiSelect', 'off');
 parse(p, varargin{:})
 
-filename = p.Results.fileName;
+filename = p.Results.filename;
 select_multiple = p.Results.multiSelect;
 select_directory = p.Results.selectDirectory;
 
